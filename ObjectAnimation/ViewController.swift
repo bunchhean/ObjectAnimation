@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController {
     
     var isSmallObject : Bool = true
+    var isDrag : Bool = true
     var btnObject = UIButton();
     
     
@@ -23,7 +24,7 @@ class ViewController: UIViewController {
         btnObject   = UIButton.buttonWithType(UIButtonType.Custom) as UIButton
         btnObject.frame = CGRectMake(20, 300, 60, 60)
         btnObject.setImage(image, forState: .Normal)
-        btnObject.addTarget(self, action: "btnObjectTouched:", forControlEvents:.TouchUpInside)
+        btnObject.addTarget(self, action: "btnObjectTouched:", forControlEvents:UIControlEvents.TouchUpInside)
         btnObject.addTarget(self, action: "wasDragged:event:", forControlEvents: UIControlEvents.TouchDragInside)
         self.view.addSubview(btnObject)
     }
@@ -42,35 +43,78 @@ class ViewController: UIViewController {
         
     //////////////////////// function fade object to bigger and smaller ///////////////
     @IBAction func btnObjectTouched(sender: AnyObject) {
+        if isDrag == false{
+            isDrag = true
+            return
+        }
         if isSmallObject {
             isSmallObject = false;
-
-            UIView.animateWithDuration(1.5,
+            
+            self.btnObject.alpha = 0.0;
+            UIView.animateWithDuration(2.0,
                 delay: 0,
-                options: .CurveLinear & .AllowUserInteraction & .BeginFromCurrentState,
+                options: .CurveEaseIn & .AllowUserInteraction & .BeginFromCurrentState,
                 animations: {
-                    self.btnObject.frame = CGRectMake(self.view.frame.size.width - 150, 180, 130, 130)
+                    self.btnObject.alpha = 1.0;
+                  
+                    //self.btnObject.frame = CGRectMake(self.view.frame.size.width - 150, 180, 130, 130)
+                    
+                    self.btnObject.frame.size = CGSizeMake(130, 130);
+                    
+                    let path = UIBezierPath()
+                    path.moveToPoint(CGPoint(x: 20,y: 300))
+                    path.addCurveToPoint(CGPoint(x: self.view.frame.size.width - 100, y: 250), 
+                        controlPoint1: CGPoint(x: 150, y: 400), 
+                        controlPoint2: CGPoint(x: 400, y: 300))
+                    
+                    let anim = CAKeyframeAnimation(keyPath: "position")
+                    anim.path = path.CGPath
+                    anim.repeatCount = 0
+                    anim.duration = 2.1
+                    self.btnObject.layer.addAnimation(anim, forKey: "animate position along path")
+                    
                 }, completion:{
                     (finished: Bool) in
                     let image = UIImage(named: "big-object") as UIImage?
-                    self.btnObject.frame = CGRectMake(self.view.frame.size.width - 150, 180, 130, 130)
+                    self.btnObject.frame = CGRectMake(self.view.frame.size.width - 150, 200, 130, 130)
                     self.btnObject.setImage(image, forState: .Normal)
+                    self.btnObject.alpha = 1.0;
             })
             
+                                   
         } else {
             isSmallObject = true;
-            UIView.animateWithDuration(1.5,
+            self.btnObject.alpha = 1.0;
+            UIView.animateWithDuration(2.0,
                 delay: 0,
-                options: .CurveLinear & .AllowUserInteraction & .BeginFromCurrentState,
+                options: .CurveEaseOut & .AllowUserInteraction & .BeginFromCurrentState,
                 animations: {
-                     self.btnObject.frame = CGRectMake(20, 300, 60, 60)
+                     self.btnObject.alpha = 0.0;
+                    // self.btnObject.frame = CGRectMake(20, 300, 60, 60)
+                    
+                    self.btnObject.frame.size = CGSizeMake(60, 60);
+                    
+                    let path = UIBezierPath()
+                    path.moveToPoint(CGPoint(x: self.view.frame.size.width - 100 ,y: 250))
+                    path.addCurveToPoint(CGPoint(x: 50, y: 330), 
+                        controlPoint1: CGPoint(x: 400, y: 400), 
+                        controlPoint2: CGPoint(x: 150, y: 300))
+                    
+                    let anim = CAKeyframeAnimation(keyPath: "position")
+                    anim.path = path.CGPath
+                    anim.repeatCount = 0
+                    anim.duration = 2.1
+                    self.btnObject.layer.addAnimation(anim, forKey: "animate position along path")
+                    
                 }, completion: {
                     (finished: Bool) in
                     let image = UIImage(named: "small-object1") as UIImage?
                     self.btnObject.frame = CGRectMake(20, 300, 60, 60)
                     self.btnObject.setImage(image, forState: .Normal)
+                    self.btnObject.alpha = 1.0;
             })
         }
+       
     }
     
     /////////////////// function drag object to any position in screen //////////
@@ -85,7 +129,7 @@ class ViewController: UIViewController {
             buttn.center = CGPointMake(buttn.center.x + delta_x,
                 buttn.center.y + delta_y);
         }
-        
+        isDrag = false;
     }
     
     func cloudAnimationLoop(){
@@ -150,6 +194,8 @@ class ViewController: UIViewController {
         )
         
     }
+    
+    
 
     
 }
